@@ -34,6 +34,16 @@ h2 {
   text-align: center;
 }
 
+p {
+  line-height: 1.4em;
+  margin: 5px 0;
+}
+
+.status-scheduled { color: green; font-weight: bold; }
+.status-active { color: orange; font-weight: bold; }
+.status-delayed { color: red; font-weight: bold; }
+.status-landed { color: blue; font-weight: bold; }
+
 footer {
   text-align: center;
   padding: 15px;
