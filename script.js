@@ -3,7 +3,9 @@
 // =======================
 const WEATHER_API_KEY = "d1cd9db2d75eeea7256c3c549ee57fd4";
 const FLIGHTS_API_KEY = "b8d1eb66f94a55c5490f2e8d4a30e101";
-const WEBCAM_URL = "https://via.placeholder.com/400x300?text=CMX+Webcam";
+
+// Houghton city ID for OpenWeatherMap
+const HOUGHTON_CITY_ID = 4996574; 
 
 // =======================
 // HELPERS
@@ -35,7 +37,7 @@ function statusClass(status) {
 async function getWeather() {
   try {
     const res = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=Houghton,MI&appid=${WEATHER_API_KEY}&units=imperial`
+      `https://api.openweathermap.org/data/2.5/weather?id=${HOUGHTON_CITY_ID}&appid=${WEATHER_API_KEY}&units=imperial`
     );
     const data = await res.json();
     if (data.cod !== 200) {
@@ -49,7 +51,7 @@ async function getWeather() {
     console.error(err);
   }
 }
-setInterval(getWeather, 600000);
+setInterval(getWeather, 600000); // refresh every 10 mins
 getWeather();
 
 // =======================
@@ -102,18 +104,8 @@ async function populateFlights() {
     document.getElementById("departures").innerHTML += "<p>Error loading departures</p>";
   }
 }
-setInterval(populateFlights, 300000);
+setInterval(populateFlights, 300000); // refresh every 5 mins
 populateFlights();
-
-// =======================
-// WEBCAM
-// =======================
-function updateWebcam() {
-  const cam = document.querySelector("#webcam img");
-  cam.src = WEBCAM_URL + "?t=" + new Date().getTime();
-}
-setInterval(updateWebcam, 30000);
-updateWebcam();
 
 // =======================
 // LAST UPDATED TIMESTAMP
