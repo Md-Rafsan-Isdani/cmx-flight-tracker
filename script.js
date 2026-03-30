@@ -393,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   // Replace WEBCAM_URL with your real webcam image URL.
   // Many airport webcams are just auto-refreshing JPEGs.
-  const WEBCAM_URL = ""; // ← e.g. "https://your-webcam-url.jpg"
+  const WEBCAM_URL = "https://www.mtu.edu/webcams/view/"; // ← e.g. "https://your-webcam-url.jpg"
   let webcamCountdown = 30;
 
   function refreshWebcam() {
