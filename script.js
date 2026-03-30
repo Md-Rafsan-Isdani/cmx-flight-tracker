@@ -236,10 +236,12 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
     try {
-      const [arrRes, depRes] = await Promise.all([
-        fetch(`http://api.aviationstack.com/v1/flights?access_key=${FLIGHTS_API_KEY}&arr_iata=CMX&flight_date=${dateStr}`),
-        fetch(`http://api.aviationstack.com/v1/flights?access_key=${FLIGHTS_API_KEY}&dep_iata=CMX&flight_date=${dateStr}`),
-      ]);
+     const BASE = "https://api.allorigins.win/raw?url=";
+
+const [arrRes, depRes] = await Promise.all([
+  fetch(`${BASE}http://api.aviationstack.com/v1/flights?access_key=${FLIGHTS_API_KEY}&arr_iata=CMX&flight_date=${dateStr}`),
+  fetch(`${BASE}http://api.aviationstack.com/v1/flights?access_key=${FLIGHTS_API_KEY}&dep_iata=CMX&flight_date=${dateStr}`)
+]);
       const [arrData, depData] = await Promise.all([arrRes.json(), depRes.json()]);
       return {
         arrivals:   arrData.data  || [],
