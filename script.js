@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // CONFIG — add your keys
   // =======================
   const WEATHER_API_KEY = "d1cd9db2d75eeea7256c3c549ee57fd4";
-  const FLIGHTS_API_KEY = ""; // ← paste your aviationstack.com key here
+  const FLIGHTS_API_KEY = "b8d1eb66f94a55c5490f2e8d4a30e101"; // ← paste your aviationstack.com key here
   const HANCOCK_LAT     = 47.1742;
   const HANCOCK_LON     = -88.4904;
 
