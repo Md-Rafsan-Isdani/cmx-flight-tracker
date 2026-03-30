@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadWeather() {
     try {
       const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${HANCOCK_LAT}&lon=${HANCOCK_LON}&appid=${WEATHER_API_KEY}&units=imperial`
+        `http://api.openweathermap.org/data/2.5/weather?lat=${HANCOCK_LAT}&lon=${HANCOCK_LON}&appid=${WEATHER_API_KEY}&units=imperial`
       );
       const d = await res.json();
       if (d.cod !== 200) throw new Error(d.message);
