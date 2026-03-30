@@ -1,6 +1,6 @@
 // ======= Minimal Flights Test (AviationStack) =======
 
-const FLIGHT_API_KEY = "YOUR_API_KEY_HERE"; // replace with your key
+const FLIGHT_API_KEY = "b8d1eb66f94a55c5490f2e8d4a30e101"; // replace with your key
 const ARRIVALS_LIST = document.getElementById("arrivals-list");
 const DEPARTURES_LIST = document.getElementById("departures-list");
 
