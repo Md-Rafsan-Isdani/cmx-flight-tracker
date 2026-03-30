@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // CONFIG
   // =======================
   const WEATHER_API_KEY = "d1cd9db2d75eeea7256c3c549ee57fd4"; 
-  const FLIGHTS_API_KEY = "b8d1eb66f94a55c5490f2e8d4a30e101"; 
+  const FLIGHTS_API_KEY = ""; 
   const HANCOCK_CITY_ID = 4996575;
 
   // =======================
