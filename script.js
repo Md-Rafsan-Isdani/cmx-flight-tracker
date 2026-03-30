@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const FLIGHTS_API_KEY = ""; // ← paste your aviationstack.com key here
   const HANCOCK_LAT     = 47.1742;
   const HANCOCK_LON     = -88.4904;
-  const HANCOCK_CITY_ID = 4996575;
 
   // =======================
   // CLOCK
