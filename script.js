@@ -1,7 +1,7 @@
 // =======================
 // CONFIG
 // =======================
-const FLIGHT_API_KEY = "YOUR_AVIATIONSTACK_KEY"; // replace with your key
+const FLIGHT_API_KEY = "b8d1eb66f94a55c5490f2e8d4a30e101"; // replace with your key
 let currentFlightDate = new Date();
 
 // =======================
