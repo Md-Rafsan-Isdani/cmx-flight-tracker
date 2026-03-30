@@ -12,6 +12,7 @@ header {
   background-color: #00796b;
   color: white;
   font-size: 2em;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 #top-section, #flights-section {
@@ -26,12 +27,20 @@ header {
   border-radius: 10px;
   padding: 15px;
   margin: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   flex: 1 1 400px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
 }
 
 h2 {
   text-align: center;
+  margin-top: 0;
+  color: #00796b;
 }
 
 p {
@@ -44,9 +53,43 @@ p {
 .status-delayed { color: red; font-weight: bold; }
 .status-landed { color: blue; font-weight: bold; }
 
+#date-tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 15px;
+  background: #b2dfdb;
+  border-radius: 10px;
+  margin: 20px;
+}
+
+.date-btn, #search-btn {
+  background: #00796b;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.date-btn:hover, #search-btn:hover {
+  background: #004d40;
+}
+
+#search-date {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #00796b;
+}
+
 footer {
   text-align: center;
   padding: 15px;
   background-color: #00796b;
   color: white;
+  font-weight: bold;
+  margin-top: 30px;
 }
