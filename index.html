@@ -2,18 +2,37 @@
 <html>
 <head>
   <title>CMX Flight Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h1>Houghton County Memorial Airport (CMX)</h1>
+  <header>
+    <h1>Houghton County Memorial Airport (CMX) Flight Tracker</h1>
+  </header>
 
-  <h2>Flights</h2>
-  <div id="flights">Loading flights...</div>
+  <section id="top-section">
+    <div id="weather" class="card">
+      Loading weather...
+    </div>
+    <div id="webcam" class="card">
+      <img src="https://via.placeholder.com/400x300?text=CMX+Webcam" alt="CMX Webcam" width="100%">
+    </div>
+  </section>
 
-  <h2>Weather</h2>
-  <div id="weather">Loading weather...</div>
+  <section id="flights-section">
+    <div id="arrivals" class="card">
+      <h2>Arrivals</h2>
+      Loading arrivals...
+    </div>
+    <div id="departures" class="card">
+      <h2>Departures</h2>
+      Loading departures...
+    </div>
+  </section>
 
-  <h2>Webcam</h2>
-  <img id="webcam" width="400"/>
+  <footer>
+    <p>Last updated: <span id="last-updated">--:--</span></p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
