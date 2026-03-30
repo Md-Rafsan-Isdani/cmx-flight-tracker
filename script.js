@@ -1,30 +1,38 @@
 // =========================
-// FLIGHTS USING OPENSKY
+// FLIGHT BOARD USING OPENSKY + MOCK
 // =========================
 
-// CMX ICAO code
-const AIRPORT_ICAO = "KCMX";
-
-// Flight board containers
+// =========================
+// CONFIG
+// =========================
+const AIRPORT_ICAO = "KCMX"; // Change to test other airports
 const ARRIVALS_LIST = document.getElementById("arrivals-list");
 const DEPARTURES_LIST = document.getElementById("departures-list");
+const FLIGHTS_UPDATED = document.getElementById("flights-updated");
 
-// Current flight date for navigation
 let currentFlightDate = new Date();
 
-// Mock data fallback for CMX (small airport)
+// =========================
+// MOCK DATA (fallback for small airports like CMX)
+// =========================
 const MOCK_FLIGHTS = [
   { flight: "DL123", airline: "Delta Airlines", from: "DTW", to: "CMX", time: "10:30" },
   { flight: "AA456", airline: "American Airlines", from: "ORD", to: "CMX", time: "13:00" },
   { flight: "DL789", airline: "Delta Airlines", from: "CMX", to: "DTW", time: "15:00" },
 ];
 
-// Utility to format time
+// =========================
+// UTILITIES
+// =========================
 function formatTime(dateStr) {
   return dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "---";
 }
 
-// Populate flight board
+function formatDate(date) {
+  return date.toISOString().split("T")[0]; // yyyy-mm-dd
+}
+
+// Populate board
 function populateBoard(container, flights, type) {
   container.innerHTML = "";
   if (!flights || flights.length === 0) {
@@ -45,50 +53,86 @@ function populateBoard(container, flights, type) {
   });
 }
 
-// Fetch live flights from OpenSky Network API
-async function fetchOpenSkyFlights() {
+// =========================
+// FETCH LIVE FLIGHTS (OpenSky API)
+// =========================
+async function fetchOpenSkyFlights(date = new Date()) {
   try {
-    // OpenSky API live arrivals/departures for KCMX
-    // NOTE: OpenSky limits to last 7 days and only provides current positions
-    const url = `https://opensky-network.org/api/flights/arrival?airport=${AIRPORT_ICAO}&begin=${Math.floor(Date.now()/1000)-86400}&end=${Math.floor(Date.now()/1000)}`;
+    const begin = Math.floor(new Date(date).setHours(0,0,0,0)/1000);
+    const end = Math.floor(new Date(date).setHours(23,59,59,999)/1000);
+
+    const url = `https://opensky-network.org/api/flights/arrival?airport=${AIRPORT_ICAO}&begin=${begin}&end=${end}`;
     const res = await fetch(url);
     const data = await res.json();
 
-    if (!data || data.length === 0) {
-      // Use mock data if OpenSky returns nothing
-      populateBoard(ARRIVALS_LIST, MOCK_FLIGHTS.filter(f => f.to === "CMX"), "arrival");
-      populateBoard(DEPARTURES_LIST, MOCK_FLIGHTS.filter(f => f.from === "CMX"), "departure");
-      return;
+    let arrivals = [];
+    let departures = [];
+
+    if (data && data.length > 0) {
+      arrivals = data.filter(f => f.estArrivalAirport === AIRPORT_ICAO).map(f => ({
+        flight: f.callsign?.trim() || "---",
+        airline: f.estDepartureAirport || "---",
+        from: f.estDepartureAirport || "---",
+        to: AIRPORT_ICAO,
+        time: formatTime(f.lastSeen * 1000)
+      }));
+
+      departures = data.filter(f => f.estDepartureAirport === AIRPORT_ICAO).map(f => ({
+        flight: f.callsign?.trim() || "---",
+        airline: f.estArrivalAirport || "---",
+        from: AIRPORT_ICAO,
+        to: f.estArrivalAirport || "---",
+        time: formatTime(f.firstSeen * 1000)
+      }));
     }
 
-    // Map OpenSky flights to board format
-    const arrivals = data.filter(f => f.estArrivalAirport === "KCMX").map(f => ({
-      flight: f.callsign?.trim() || "---",
-      airline: f.estDepartureAirport || "---",
-      from: f.estDepartureAirport || "---",
-      to: "CMX",
-      time: formatTime(f.lastSeen * 1000)
-    }));
+    // If no flights, fallback to mock
+    if (!arrivals.length) arrivals = MOCK_FLIGHTS.filter(f => f.to === AIRPORT_ICAO);
+    if (!departures.length) departures = MOCK_FLIGHTS.filter(f => f.from === AIRPORT_ICAO);
 
-    const departures = data.filter(f => f.estDepartureAirport === "KCMX").map(f => ({
-      flight: f.callsign?.trim() || "---",
-      airline: f.estArrivalAirport || "---",
-      from: "CMX",
-      to: f.estArrivalAirport || "---",
-      time: formatTime(f.firstSeen * 1000)
-    }));
+    populateBoard(ARRIVALS_LIST, arrivals, "arrival");
+    populateBoard(DEPARTURES_LIST, departures, "departure");
 
-    populateBoard(ARRIVALS_LIST, arrivals.length ? arrivals : MOCK_FLIGHTS.filter(f => f.to === "CMX"), "arrival");
-    populateBoard(DEPARTURES_LIST, departures.length ? departures : MOCK_FLIGHTS.filter(f => f.from === "CMX"), "departure");
+    FLIGHTS_UPDATED.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   } catch (err) {
     console.error("OpenSky fetch failed:", err);
-    // Use mock data fallback
-    populateBoard(ARRIVALS_LIST, MOCK_FLIGHTS.filter(f => f.to === "CMX"), "arrival");
-    populateBoard(DEPARTURES_LIST, MOCK_FLIGHTS.filter(f => f.from === "CMX"), "departure");
+    populateBoard(ARRIVALS_LIST, MOCK_FLIGHTS.filter(f => f.to === AIRPORT_ICAO), "arrival");
+    populateBoard(DEPARTURES_LIST, MOCK_FLIGHTS.filter(f => f.from === AIRPORT_ICAO), "departure");
+    FLIGHTS_UPDATED.textContent = "--:--";
   }
 }
 
-// Auto-refresh every 2 minutes
-fetchOpenSkyFlights();
-setInterval(fetchOpenSkyFlights, 2 * 60 * 1000);
+// =========================
+// DATE NAVIGATION
+// =========================
+function setupDateButtons() {
+  const buttons = document.querySelectorAll(".date-btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const offset = parseInt(btn.dataset.offset);
+      const newDate = new Date();
+      newDate.setDate(newDate.getDate() + offset);
+      currentFlightDate = newDate;
+      fetchOpenSkyFlights(currentFlightDate);
+    });
+  });
+}
+
+// Search by input date
+document.getElementById("search-btn").addEventListener("click", () => {
+  const input = document.getElementById("search-date").value;
+  if (!input) return;
+  currentFlightDate = new Date(input);
+  document.querySelectorAll(".date-btn").forEach(b => b.classList.remove("active"));
+  fetchOpenSkyFlights(currentFlightDate);
+});
+
+// =========================
+// INITIALIZATION
+// =========================
+setupDateButtons();
+fetchOpenSkyFlights(currentFlightDate);
+setInterval(() => fetchOpenSkyFlights(currentFlightDate), 2 * 60 * 1000);
