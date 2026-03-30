@@ -238,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const [arrRes, depRes] = await Promise.all([
         fetch(`https://api.aviationstack.com/v1/flights?access_key=${FLIGHTS_API_KEY}&arr_iata=CMX&flight_date=${dateStr}`),
-        fetch(`https://api.aviationstack.com/v1/flights?access_key=${FLIGHTS_API_KEY}&dep_iata=CMX&flight_date=${dateStr}`),
+        fetch(`http://api.aviationstack.com/v1/flights?access_key=${FLIGHTS_API_KEY}&dep_iata=CMX&flight_date=${dateStr}`),
       ]);
       const [arrData, depData] = await Promise.all([arrRes.json(), depRes.json()]);
       return {
