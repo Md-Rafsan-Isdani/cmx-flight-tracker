@@ -1,37 +1,30 @@
-// ======= Minimal Flights Test (AviationStack) =======
+// =========================
+// FLIGHTS USING OPENSKY
+// =========================
 
-const FLIGHT_API_KEY = "b8d1eb66f94a55c5490f2e8d4a30e101"; // replace with your key
+// CMX ICAO code
+const AIRPORT_ICAO = "KCMX";
+
+// Flight board containers
 const ARRIVALS_LIST = document.getElementById("arrivals-list");
 const DEPARTURES_LIST = document.getElementById("departures-list");
 
+// Current flight date for navigation
+let currentFlightDate = new Date();
+
+// Mock data fallback for CMX (small airport)
+const MOCK_FLIGHTS = [
+  { flight: "DL123", airline: "Delta Airlines", from: "DTW", to: "CMX", time: "10:30" },
+  { flight: "AA456", airline: "American Airlines", from: "ORD", to: "CMX", time: "13:00" },
+  { flight: "DL789", airline: "Delta Airlines", from: "CMX", to: "DTW", time: "15:00" },
+];
+
+// Utility to format time
 function formatTime(dateStr) {
   return dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "---";
 }
 
-async function fetchFlights() {
-  const today = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
-  try {
-    // Arrivals
-    const arrivalsRes = await fetch(
-      `https://api.aviationstack.com/v1/flights?access_key=${FLIGHT_API_KEY}&arr_icao=KCMX&flight_date=${today}`
-    );
-    const arrivalsData = await arrivalsRes.json();
-    populateBoard(ARRIVALS_LIST, arrivalsData.data, "arrival");
-
-    // Departures
-    const departuresRes = await fetch(
-      `https://api.aviationstack.com/v1/flights?access_key=${FLIGHT_API_KEY}&dep_icao=KCMX&flight_date=${today}`
-    );
-    const departuresData = await departuresRes.json();
-    populateBoard(DEPARTURES_LIST, departuresData.data, "departure");
-
-  } catch (err) {
-    console.error("Flight fetch failed:", err);
-    ARRIVALS_LIST.innerHTML = "<div class='loading-state'>Error loading arrivals</div>";
-    DEPARTURES_LIST.innerHTML = "<div class='loading-state'>Error loading departures</div>";
-  }
-}
-
+// Populate flight board
 function populateBoard(container, flights, type) {
   container.innerHTML = "";
   if (!flights || flights.length === 0) {
@@ -40,22 +33,62 @@ function populateBoard(container, flights, type) {
   }
 
   flights.forEach(f => {
-    const flightNum = f.flight?.iata || f.flight?.number || "---";
-    const airline = f.airline?.name || "---";
-    const fromTo = type === "arrival" ? f.departure?.iata || "---" : f.arrival?.iata || "---";
-    const time = type === "arrival" ? f.arrival?.scheduled : f.departure?.scheduled;
-
     const row = document.createElement("div");
     row.className = "flight-row";
     row.innerHTML = `
-      <div class="flight-num">${flightNum}</div>
-      <div class="flight-airline">${airline}</div>
-      <div class="flight-fromto">${fromTo}</div>
-      <div class="flight-time">${formatTime(time)}</div>
+      <div class="flight-num">${f.flight}</div>
+      <div class="flight-airline">${f.airline}</div>
+      <div class="flight-fromto">${type === "arrival" ? f.from : f.to}</div>
+      <div class="flight-time">${f.time}</div>
     `;
     container.appendChild(row);
   });
 }
 
-// Run once
-fetchFlights();
+// Fetch live flights from OpenSky Network API
+async function fetchOpenSkyFlights() {
+  try {
+    // OpenSky API live arrivals/departures for KCMX
+    // NOTE: OpenSky limits to last 7 days and only provides current positions
+    const url = `https://opensky-network.org/api/flights/arrival?airport=${AIRPORT_ICAO}&begin=${Math.floor(Date.now()/1000)-86400}&end=${Math.floor(Date.now()/1000)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      // Use mock data if OpenSky returns nothing
+      populateBoard(ARRIVALS_LIST, MOCK_FLIGHTS.filter(f => f.to === "CMX"), "arrival");
+      populateBoard(DEPARTURES_LIST, MOCK_FLIGHTS.filter(f => f.from === "CMX"), "departure");
+      return;
+    }
+
+    // Map OpenSky flights to board format
+    const arrivals = data.filter(f => f.estArrivalAirport === "KCMX").map(f => ({
+      flight: f.callsign?.trim() || "---",
+      airline: f.estDepartureAirport || "---",
+      from: f.estDepartureAirport || "---",
+      to: "CMX",
+      time: formatTime(f.lastSeen * 1000)
+    }));
+
+    const departures = data.filter(f => f.estDepartureAirport === "KCMX").map(f => ({
+      flight: f.callsign?.trim() || "---",
+      airline: f.estArrivalAirport || "---",
+      from: "CMX",
+      to: f.estArrivalAirport || "---",
+      time: formatTime(f.firstSeen * 1000)
+    }));
+
+    populateBoard(ARRIVALS_LIST, arrivals.length ? arrivals : MOCK_FLIGHTS.filter(f => f.to === "CMX"), "arrival");
+    populateBoard(DEPARTURES_LIST, departures.length ? departures : MOCK_FLIGHTS.filter(f => f.from === "CMX"), "departure");
+
+  } catch (err) {
+    console.error("OpenSky fetch failed:", err);
+    // Use mock data fallback
+    populateBoard(ARRIVALS_LIST, MOCK_FLIGHTS.filter(f => f.to === "CMX"), "arrival");
+    populateBoard(DEPARTURES_LIST, MOCK_FLIGHTS.filter(f => f.from === "CMX"), "departure");
+  }
+}
+
+// Auto-refresh every 2 minutes
+fetchOpenSkyFlights();
+setInterval(fetchOpenSkyFlights, 2 * 60 * 1000);
