@@ -53,7 +53,8 @@ fetchWeather();
 setInterval(fetchWeather, 10 * 60 * 1000); // every 10 min
 
 // =======================
-// FLIGHTS
+// =======================
+// FLIGHTS (with test fallback)
 // =======================
 let currentFlightDate = new Date();
 
@@ -61,29 +62,20 @@ function formatDate(date) {
   return date.toISOString().split("T")[0]; // yyyy-mm-dd
 }
 
-async function fetchFlights(date = new Date()) {
-  const formattedDate = formatDate(date);
-  currentFlightDate = date;
+// ----- TEST FLIGHTS (used if API fails or for testing) -----
+const testArrivals = [
+  { flight: { iata: "DL123" }, airline: { name: "Delta" }, departure: { iata: "MSP" }, arrival: { scheduled: "2026-03-30T14:20:00" } },
+  { flight: { iata: "AA456" }, airline: { name: "American Airlines" }, departure: { iata: "ORD" }, arrival: { scheduled: "2026-03-30T15:05:00" } },
+  { flight: { iata: "UA789" }, airline: { name: "United" }, departure: { iata: "DTW" }, arrival: { scheduled: "2026-03-30T16:10:00" } },
+];
 
-  // Arrivals
-  const arrivalsUrl = `https://api.aviationstack.com/v1/flights?access_key=${FLIGHT_API_KEY}&arr_icao=KCMX&flight_date=${formattedDate}`;
-  // Departures
-  const departuresUrl = `https://api.aviationstack.com/v1/flights?access_key=${FLIGHT_API_KEY}&dep_icao=KCMX&flight_date=${formattedDate}`;
+const testDepartures = [
+  { flight: { iata: "DL321" }, airline: { name: "Delta" }, departure: { scheduled: "2026-03-30T14:50:00" }, arrival: { iata: "MSP" } },
+  { flight: { iata: "AA654" }, airline: { name: "American Airlines" }, departure: { scheduled: "2026-03-30T15:30:00" }, arrival: { iata: "ORD" } },
+  { flight: { iata: "UA987" }, airline: { name: "United" }, departure: { scheduled: "2026-03-30T16:40:00" }, arrival: { iata: "DTW" } },
+];
 
-  try {
-    const [arrivalsRes, departuresRes] = await Promise.all([fetch(arrivalsUrl), fetch(departuresUrl)]);
-    const arrivalsData = await arrivalsRes.json();
-    const departuresData = await departuresRes.json();
-
-    populateBoard("arrivals-list", arrivalsData.data, "arrival");
-    populateBoard("departures-list", departuresData.data, "departure");
-
-    document.getElementById("flights-updated").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } catch (err) {
-    console.error("Flight fetch failed:", err);
-  }
-}
-
+// ----- POPULATE BOARD -----
 function populateBoard(boardId, flights, type) {
   const container = document.getElementById(boardId);
   container.innerHTML = "";
@@ -96,24 +88,71 @@ function populateBoard(boardId, flights, type) {
   flights.forEach(f => {
     const row = document.createElement("div");
     row.className = "flight-row";
+
     const flightNum = f.flight ? f.flight.iata || f.flight.number : "---";
     const airline = f.airline ? f.airline.name : "---";
     const fromTo = type === "arrival" ? (f.departure ? f.departure.iata : "---") : (f.arrival ? f.arrival.iata : "---");
-    const time = type === "arrival" ? (f.arrival ? f.arrival.scheduled : "---") : (f.departure ? f.departure.scheduled : "---");
+    const timeRaw = type === "arrival" ? (f.arrival ? f.arrival.scheduled : "---") : (f.departure ? f.departure.scheduled : "---");
+    const time = timeRaw !== "---" ? new Date(timeRaw).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "---";
 
     row.innerHTML = `
       <div class="flight-num">${flightNum}</div>
       <div class="flight-airline">${airline}</div>
       <div class="flight-fromto">${fromTo}</div>
-      <div class="flight-time">${time !== "---" ? new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "---"}</div>
+      <div class="flight-time">${time}</div>
     `;
+
     container.appendChild(row);
   });
 }
 
-// Auto-refresh every 2 minutes
+// ----- FETCH FLIGHTS (API) -----
+async function fetchFlights(date = new Date()) {
+  const formattedDate = formatDate(date);
+  currentFlightDate = date;
+
+  // Uncomment and fill your API key to use real flights
+  // const arrivalsUrl = `https://api.aviationstack.com/v1/flights?access_key=${FLIGHT_API_KEY}&arr_icao=KCMX&flight_date=${formattedDate}`;
+  // const departuresUrl = `https://api.aviationstack.com/v1/flights?access_key=${FLIGHT_API_KEY}&dep_icao=KCMX&flight_date=${formattedDate}`;
+
+  try {
+    // ===== TEMP: use test data =====
+    const arrivalsData = { data: testArrivals };
+    const departuresData = { data: testDepartures };
+
+    // ===== Uncomment below to use real API =====
+    // const [arrivalsRes, departuresRes] = await Promise.all([fetch(arrivalsUrl), fetch(departuresUrl)]);
+    // const arrivalsData = await arrivalsRes.json();
+    // const departuresData = await departuresRes.json();
+
+    populateBoard("arrivals-list", arrivalsData.data, "arrival");
+    populateBoard("departures-list", departuresData.data, "departure");
+
+    document.getElementById("flights-updated").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (err) {
+    console.error("Flight fetch failed:", err);
+    // fallback to test data if API fails
+    populateBoard("arrivals-list", testArrivals, "arrival");
+    populateBoard("departures-list", testDepartures, "departure");
+  }
+}
+
+// ----- INITIAL LOAD & AUTO-REFRESH -----
 fetchFlights(currentFlightDate);
 setInterval(() => fetchFlights(currentFlightDate), 2 * 60 * 1000);
+
+// ----- DATE NAVIGATION (TEST VERSION) -----
+document.querySelectorAll(".date-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".date-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    fetchFlights(currentFlightDate); // just reload test data
+  });
+});
+
+document.getElementById("search-btn").addEventListener("click", () => {
+  fetchFlights(currentFlightDate);
+});
 
 // =======================
 // DATE NAVIGATION
