@@ -1,95 +1,298 @@
+/* ===== GLOBAL STYLES ===== */
 body {
-  font-family: 'Roboto', sans-serif;
-  background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+  font-family: 'DM Sans', sans-serif;
+  background-color: #f0f2f5;
+  color: #1a1a2e;
   margin: 0;
   padding: 0;
-  color: #333;
 }
 
-header {
-  text-align: center;
-  padding: 20px;
-  background-color: #00796b;
-  color: white;
-  font-size: 2em;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+h1, h2, h3 {
+  font-family: 'Space Mono', monospace;
+  margin: 0;
 }
 
-#top-section, #flights-section {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  margin: 20px;
-}
-
-.card {
-  background: white;
-  border-radius: 10px;
-  padding: 15px;
-  margin: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  flex: 1 1 400px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-}
-
-h2 {
-  text-align: center;
-  margin-top: 0;
-  color: #00796b;
-}
-
-p {
-  line-height: 1.4em;
-  margin: 5px 0;
-}
-
-.status-scheduled { color: green; font-weight: bold; }
-.status-active { color: orange; font-weight: bold; }
-.status-delayed { color: red; font-weight: bold; }
-.status-landed { color: blue; font-weight: bold; }
-
-#date-tabs {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 15px;
-  background: #b2dfdb;
-  border-radius: 10px;
-  margin: 20px;
-}
-
-.date-btn, #search-btn {
-  background: #00796b;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
+a, button {
+  font-family: 'DM Sans', sans-serif;
   cursor: pointer;
-  font-weight: bold;
 }
 
-.date-btn:hover, #search-btn:hover {
-  background: #004d40;
+/* ===== HEADER ===== */
+.site-header {
+  background: linear-gradient(90deg, #0d47a1, #1976d2);
+  color: #fff;
+  padding: 15px 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-#search-date {
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #00796b;
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-footer {
+.airport-code {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-right: 15px;
+}
+
+.header-titles h1 {
+  font-size: 1.6rem;
+}
+
+.header-sub {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  background-color: #ff5252;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  gap: 6px;
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 1.2s infinite;
+}
+
+.pulse-dot.red { background-color: #ff5252; }
+.pulse-dot.green { background-color: #4caf50; }
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.clock-wrap {
+  text-align: right;
+}
+
+#clock {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+#clock-date {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* ===== WEATHER STRIP ===== */
+.weather-strip {
+  background-color: #ffffff;
+  padding: 20px 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  border-radius: 12px;
+}
+
+.weather-inner {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.weather-current {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.weather-icon-wrap {
+  font-size: 3rem;
+}
+
+.temp-big {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.weather-details {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.weather-detail-item {
+  background-color: #f0f2f5;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.weather-forecast {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.weather-updated {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-top: 10px;
+}
+
+/* ===== MAIN GRID ===== */
+.main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+  padding: 0 30px 30px 30px;
+}
+
+/* ===== FLIGHTS SECTION ===== */
+.flights-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.date-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.date-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.date-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e0e0e0;
+  color: #1a1a2e;
+  transition: all 0.2s;
+}
+
+.date-btn.active, .date-btn:hover {
+  background-color: #1976d2;
+  color: #fff;
+}
+
+.date-search input {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-right: 5px;
+}
+
+.date-search button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background-color: #1976d2;
+  color: #fff;
+}
+
+/* ===== FLIGHT BOARDS ===== */
+.flight-board {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1976d2;
+  color: #fff;
+  padding: 10px 15px;
+}
+
+.board-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.board-body {
+  max-height: 350px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+/* ===== WEBCAM SECTION ===== */
+.webcam-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.webcam-card, .info-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.webcam-frame {
+  position: relative;
+}
+
+.webcam-frame img {
+  width: 100%;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 0;
+}
+
+.webcam-overlay {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+.webcam-footer {
+  font-size: 0.8rem;
+  color: #555;
+  padding: 8px 12px;
+}
+
+/* ===== INFO CARD ===== */
+.info-card h3 {
+  padding: 12px;
+  background-color: #1976d2;
+  color: #fff;
+  margin: 0;
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.info-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* ===== FOOTER ===== */
+.site-footer {
   text-align: center;
-  padding: 15px;
-  background-color: #00796b;
-  color: white;
-  font-weight: bold;
-  margin-top: 30px;
+  padding: 15px 0;
+  font-size: 0.85rem;
+  color: #777;
+  background-color: #f0f2f5;
 }
