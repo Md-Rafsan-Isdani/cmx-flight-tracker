@@ -1,138 +1,71 @@
 // =========================
-// FLIGHT BOARD USING OPENSKY + MOCK
+// CLOCK
 // =========================
+function updateClock() {
+  const now = new Date();
+  const clockEl = document.getElementById("clock");
+  const dateEl = document.getElementById("clock-date");
 
-// =========================
-// CONFIG
-// =========================
-const AIRPORT_ICAO = "KCMX"; // Change to test other airports
-const ARRIVALS_LIST = document.getElementById("arrivals-list");
-const DEPARTURES_LIST = document.getElementById("departures-list");
-const FLIGHTS_UPDATED = document.getElementById("flights-updated");
-
-let currentFlightDate = new Date();
-
-// =========================
-// MOCK DATA (fallback for small airports like CMX)
-// =========================
-const MOCK_FLIGHTS = [
-  { flight: "DL123", airline: "Delta Airlines", from: "DTW", to: "CMX", time: "10:30" },
-  { flight: "AA456", airline: "American Airlines", from: "ORD", to: "CMX", time: "13:00" },
-  { flight: "DL789", airline: "Delta Airlines", from: "CMX", to: "DTW", time: "15:00" },
-];
-
-// =========================
-// UTILITIES
-// =========================
-function formatTime(dateStr) {
-  return dateStr ? new Date(dateStr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "---";
+  clockEl.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  dateEl.textContent = now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 }
 
-function formatDate(date) {
-  return date.toISOString().split("T")[0]; // yyyy-mm-dd
-}
-
-// Populate board
-function populateBoard(container, flights, type) {
-  container.innerHTML = "";
-  if (!flights || flights.length === 0) {
-    container.innerHTML = "<div class='loading-state'>No flights found</div>";
-    return;
-  }
-
-  flights.forEach(f => {
-    const row = document.createElement("div");
-    row.className = "flight-row";
-    row.innerHTML = `
-      <div class="flight-num">${f.flight}</div>
-      <div class="flight-airline">${f.airline}</div>
-      <div class="flight-fromto">${type === "arrival" ? f.from : f.to}</div>
-      <div class="flight-time">${f.time}</div>
-    `;
-    container.appendChild(row);
-  });
-}
+// Update clock every second
+setInterval(updateClock, 1000);
+updateClock();
 
 // =========================
-// FETCH LIVE FLIGHTS (OpenSky API)
+// WEATHER
 // =========================
-async function fetchOpenSkyFlights(date = new Date()) {
+const LAT = 47.12;  // example: CMX latitude
+const LON = -88.56; // example: CMX longitude
+const WEATHER_API_KEY = "d1cd9db2d75eeea7256c3c549ee57fd4";
+
+async function fetchWeather() {
   try {
-    const begin = Math.floor(new Date(date).setHours(0,0,0,0)/1000);
-    const end = Math.floor(new Date(date).setHours(23,59,59,999)/1000);
-
-    const url = `https://opensky-network.org/api/flights/arrival?airport=${AIRPORT_ICAO}&begin=${begin}&end=${end}`;
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&units=imperial&appid=${WEATHER_API_KEY}`;
     const res = await fetch(url);
     const data = await res.json();
 
-    let arrivals = [];
-    let departures = [];
-
-    if (data && data.length > 0) {
-      arrivals = data.filter(f => f.estArrivalAirport === AIRPORT_ICAO).map(f => ({
-        flight: f.callsign?.trim() || "---",
-        airline: f.estDepartureAirport || "---",
-        from: f.estDepartureAirport || "---",
-        to: AIRPORT_ICAO,
-        time: formatTime(f.lastSeen * 1000)
-      }));
-
-      departures = data.filter(f => f.estDepartureAirport === AIRPORT_ICAO).map(f => ({
-        flight: f.callsign?.trim() || "---",
-        airline: f.estArrivalAirport || "---",
-        from: AIRPORT_ICAO,
-        to: f.estArrivalAirport || "---",
-        time: formatTime(f.firstSeen * 1000)
-      }));
-    }
-
-    // If no flights, fallback to mock
-    if (!arrivals.length) arrivals = MOCK_FLIGHTS.filter(f => f.to === AIRPORT_ICAO);
-    if (!departures.length) departures = MOCK_FLIGHTS.filter(f => f.from === AIRPORT_ICAO);
-
-    populateBoard(ARRIVALS_LIST, arrivals, "arrival");
-    populateBoard(DEPARTURES_LIST, departures, "departure");
-
-    FLIGHTS_UPDATED.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("weather-icon").textContent = data.weather[0]?.main || "☁";
+    document.getElementById("weather-temp").textContent = `${Math.round(data.main.temp)}°F`;
+    document.getElementById("weather-desc").textContent = data.weather[0]?.description || "---";
+    document.getElementById("weather-wind").textContent = `${Math.round(data.wind.speed)} mph`;
+    document.getElementById("weather-humidity").textContent = `${data.main.humidity}%`;
+    document.getElementById("weather-vis").textContent = `${data.visibility / 1609.34 ? (data.visibility / 1609.34).toFixed(1) : "---"} mi`;
+    document.getElementById("weather-pressure").textContent = `${data.main.pressure} hPa`;
+    document.getElementById("weather-time").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   } catch (err) {
-    console.error("OpenSky fetch failed:", err);
-    populateBoard(ARRIVALS_LIST, MOCK_FLIGHTS.filter(f => f.to === AIRPORT_ICAO), "arrival");
-    populateBoard(DEPARTURES_LIST, MOCK_FLIGHTS.filter(f => f.from === AIRPORT_ICAO), "departure");
-    FLIGHTS_UPDATED.textContent = "--:--";
+    console.error("Weather fetch failed:", err);
   }
 }
 
+// Fetch weather every 10 minutes
+fetchWeather();
+setInterval(fetchWeather, 10 * 60 * 1000);
+
 // =========================
-// DATE NAVIGATION
+// WEBCAM
 // =========================
-function setupDateButtons() {
-  const buttons = document.querySelectorAll(".date-btn");
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      buttons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      const offset = parseInt(btn.dataset.offset);
-      const newDate = new Date();
-      newDate.setDate(newDate.getDate() + offset);
-      currentFlightDate = newDate;
-      fetchOpenSkyFlights(currentFlightDate);
-    });
-  });
+const WEBCAM_IMG = document.getElementById("webcam-img");
+const WEBCAM_TS = document.getElementById("webcam-ts");
+const WEBCAM_NEXT = document.getElementById("webcam-next");
+let webcamCountdown = 30;
+
+function updateWebcam() {
+  const timestamp = Date.now();
+  WEBCAM_IMG.src = `https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=640&q=80&ts=${timestamp}`;
+  WEBCAM_TS.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  webcamCountdown = 30;
 }
 
-// Search by input date
-document.getElementById("search-btn").addEventListener("click", () => {
-  const input = document.getElementById("search-date").value;
-  if (!input) return;
-  currentFlightDate = new Date(input);
-  document.querySelectorAll(".date-btn").forEach(b => b.classList.remove("active"));
-  fetchOpenSkyFlights(currentFlightDate);
-});
+// Countdown display for next refresh
+setInterval(() => {
+  webcamCountdown--;
+  WEBCAM_NEXT.textContent = webcamCountdown;
+  if (webcamCountdown <= 0) updateWebcam();
+}, 1000);
 
-// =========================
-// INITIALIZATION
-// =========================
-setupDateButtons();
-fetchOpenSkyFlights(currentFlightDate);
-setInterval(() => fetchOpenSkyFlights(currentFlightDate), 2 * 60 * 1000);
+// Initial webcam update
+updateWebcam();
